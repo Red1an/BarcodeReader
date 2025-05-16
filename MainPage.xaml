@@ -6,7 +6,7 @@
     <ContentPage.Content>
         <StackLayout>
             <Label
-                Text="Hello, World!"
+                Text="Barcode Reader"
                 Style="{StaticResource Headline}"
                 SemanticProperties.HeadingLevel="Level1" />
 
@@ -17,7 +17,7 @@
                     Clicked="OnFileButtonClicked"/>
             
             <Button x:Name="takeVideoButton"
-                    Text="Camera Stream"
+                    Text="Camera"
                     HorizontalOptions="Center"
                     VerticalOptions="CenterAndExpand"
                     Clicked="OnCameraButtonClicked"/>

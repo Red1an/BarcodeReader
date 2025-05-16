@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using Dynamsoft.Core;
 using Dynamsoft.License;
 
 namespace BarcodeReader
@@ -13,7 +14,7 @@ namespace BarcodeReader
 
             string errorMsg;
             int errorCode = LicenseManager.InitLicense(licence, out errorMsg);
-            if (errorCode != (int) Dynamsoft.Core.EnumErrorCode.EC_OK) Debug.WriteLine("Licence initialization error: " + errorMsg);
+            if (errorCode != (int)EnumErrorCode.EC_OK && errorCode != (int)EnumErrorCode.EC_LICENSE_CACHE_USED) Debug.WriteLine("Licence initialization error: " + errorMsg);
         }
 
         protected override Window CreateWindow(IActivationState? activationState)

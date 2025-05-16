@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 
+
 namespace BarcodeReader
 {
     public partial class MainPage : ContentPage
@@ -21,7 +22,8 @@ namespace BarcodeReader
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"CapturePhotoAsync THREW: {ex.Message}");
+                Debug.WriteLine($"CapturePhotoAsync THREW: {ex.ToString()}");
+                await DisplayAlert("Ошибка", ex.Message, "OK");
             }
         }
 

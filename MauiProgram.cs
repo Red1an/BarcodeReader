@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using SkiaSharp.Views.Maui.Controls.Hosting;
 
+
 namespace BarcodeReader
 {
     public static class MauiProgram
@@ -10,6 +11,7 @@ namespace BarcodeReader
             var builder = MauiApp.CreateBuilder();
             builder
                 .UseMauiApp<App>()
+                .UseSkiaSharp()
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
@@ -20,7 +22,11 @@ namespace BarcodeReader
     		builder.Logging.AddDebug();
 #endif
 
-            return builder.Build();
+            var app = builder.Build();
+
+            // Wrap your shell (or MainPage) in a NavigationPage:
+
+            return app;
         }
     }
 }
