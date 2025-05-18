@@ -5,23 +5,24 @@ using Dynamsoft.DBR;
 using SkiaSharp.Views.Maui.Controls;
 using Dynamsoft.Core;
 using System.Diagnostics;
+using System.Reflection.Emit;
+using System.Collections.ObjectModel;
 
 namespace BarcodeReader;
 
 public partial class PicturePage : ContentPage
 {
-
+    public ObservableCollection<string> AllLinks { get; set; } = new();
     SKBitmap? bitmap;
     private CaptureVisionRouter cvr = new CaptureVisionRouter();
     CapturedResult? result;
     bool isDataReady = false;
-    private string? extractedText;
 
     public PicturePage(string imagepath)
     {
         Debug.WriteLine("Создание PicturePage...");
         InitializeComponent();
-
+        BindingContext = this;
         try
         {
             bitmap = LoadAndCorrectOrientation(imagepath);
@@ -32,33 +33,18 @@ public partial class PicturePage : ContentPage
         }
 
         DecodeFile(imagepath);
-
-        var tapGesture = new TapGestureRecognizer { NumberOfTapsRequired = 1 };
-        tapGesture.Tapped += async (s, e) =>
-        {
-            var text = ResultLabel.Text;
-
-            if (string.IsNullOrWhiteSpace(text))
-            {
-                await DisplayAlert("Ошибка", "Ссылка не найдена или не распознана.", "OK");
-                return;
-            }
-
-            if (Uri.TryCreate(text, UriKind.Absolute, out var uri))
-            {
-                await Launcher.OpenAsync(uri);
-            }
-            else
-            {
-                await DisplayAlert("Неверный формат", $"Распознанный текст не является ссылкой:\n{text}", "OK");
-            }
-        };
-
-        ResultLabel.GestureRecognizers.Add(tapGesture);
-    
     }
 
-    SKBitmap LoadAndCorrectOrientation(string imagePath)
+    private async void OnLinkTapped(object sender, ItemTappedEventArgs e)
+    {
+        if (e.Item is string url && Uri.TryCreate(url, UriKind.Absolute, out var uri))
+        {
+            await Launcher.OpenAsync(uri);
+        }
+        ((ListView)sender).SelectedItem = null;
+    }
+
+    SKBitmap? LoadAndCorrectOrientation(string imagePath)
     {
         Debug.WriteLine("Запуск LoadAndCorrectOrientation.....");
 
@@ -71,14 +57,11 @@ public partial class PicturePage : ContentPage
         using var stream = new SKFileStream(imagePath);
         using var codec = SKCodec.Create(stream);
 
-        // Decode the bitmap using the codec.
         SKBitmap bitmap = SKBitmap.Decode(codec);
 
-        // Check the encoded origin (EXIF orientation)
         var origin = codec.EncodedOrigin;
         if (origin == SKEncodedOrigin.TopLeft)
         {
-            // No rotation needed
             return bitmap;
         }
 
@@ -159,6 +142,7 @@ public partial class PicturePage : ContentPage
         SKSurface surface = args.Surface;
         SKCanvas canvas = surface.Canvas;
         canvas.Clear();
+        AllLinks.Clear();
 
         if (bitmap != null)
         {
@@ -192,31 +176,28 @@ public partial class PicturePage : ContentPage
             {
                 if (result != null)
                 {
-                    ResultLabel.Text = "";
                     DecodedBarcodesResult? barcodesResult = result.GetDecodedBarcodesResult();
                     if (barcodesResult != null)
                     {
                         BarcodeResultItem[] items = barcodesResult.GetItems();
                         foreach (BarcodeResultItem barcodeItem in items)
                         {
+
                             Dynamsoft.Core.Point[] points = barcodeItem.GetLocation().points;
                             imageCanvas.DrawText(barcodeItem.GetText(), points[0][0], points[0][1], SKTextAlign.Left, font, textPaint);
-                            
+
                             imageCanvas.DrawLine(points[0][0], points[0][1], points[1][0], points[1][1], skPaint);
                             imageCanvas.DrawLine(points[1][0], points[1][1], points[2][0], points[2][1], skPaint);
                             imageCanvas.DrawLine(points[2][0], points[2][1], points[3][0], points[3][1], skPaint);
                             imageCanvas.DrawLine(points[3][0], points[3][1], points[0][0], points[0][1], skPaint);
-                            ResultLabel.Text = barcodeItem.GetText();
-
+                            AllLinks.Add(barcodeItem.GetText());
                         }
                     }
                 }
                 else
                 {
-                    ResultLabel.Text = "No 1D/2D barcode found";
+                    AllLinks.Add("No 1D/2D barcode found");
                 }
-
-
             }
 
             float scale = Math.Min((float)info.Width / bitmap.Width,
@@ -228,7 +209,5 @@ public partial class PicturePage : ContentPage
 
             canvas.DrawBitmap(bitmap, destRect);
         }
-
-
     }
 }
