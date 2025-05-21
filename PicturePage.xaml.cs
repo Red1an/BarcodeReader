@@ -34,7 +34,6 @@ public partial class PicturePage : ContentPage
 
         DecodeFile(imagepath);
     }
-
     private async void OnLinkTapped(object sender, ItemTappedEventArgs e)
     {
         if (e.Item is string url && Uri.TryCreate(url, UriKind.Absolute, out var uri))
@@ -64,7 +63,6 @@ public partial class PicturePage : ContentPage
         {
             return bitmap;
         }
-
 
         SKMatrix matrix = SKMatrix.CreateIdentity();
         int rotatedWidth = bitmap.Width;
